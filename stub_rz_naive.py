@@ -5,8 +5,8 @@ import sys
 from SwingyMonkey import SwingyMonkey
 
 unit = 40.
-gamma = 0.5
-alpha = 0.1
+gamma = 1
+alpha = 0.7
 
 class State:
 
@@ -34,7 +34,10 @@ class Learner:
                 s_xy = State(0,0,0)
                 s_xy.x = x
                 s_xy.y = y
-                self.Q[s_xy, 1] = npr.rand()/10
+                if y < 0:
+                    self.Q[s_xy, 1] = 1.
+                else:
+                    self.Q[s_xy, 1] = npr.rand()/10
                 self.Q[s_xy, 0] = npr.rand()
 
     def reset(self):
