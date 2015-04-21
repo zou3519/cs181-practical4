@@ -4,15 +4,16 @@ import sys
 
 from SwingyMonkey import SwingyMonkey
 
-unit = 40.
-gamma = 1
-alpha = 0.7
+vunit = 20
+hunit = 50
+gamma = 0.9
+alpha = 0.1
 
 class State:
 
     def __init__(self, hdist_to_trunk, monkey_height, lower_trunk_height):
-        self.x = np.floor(hdist_to_trunk/unit)
-        self.y = np.floor( (monkey_height -lower_trunk_height) /unit)
+        self.x = np.floor(hdist_to_trunk*1./hunit)
+        self.y = np.floor( (monkey_height -lower_trunk_height)*1. /vunit)
 
     def __hash__(self):
         return int( (self.x+30)*100+(self.y+20) )
@@ -29,16 +30,17 @@ class Learner:
         self.last_action = None
         self.last_reward = None
         self.Q = {} # map State, Action pairs to real numbers.
-        for x in xrange(-30, 30):
-            for y in xrange(-20,20):
+        for x in xrange(-600/hunit, 600/hunit):
+            for y in xrange(-400/vunit,400/vunit):
                 s_xy = State(0,0,0)
                 s_xy.x = x
                 s_xy.y = y
                 if y < 0:
                     self.Q[s_xy, 1] = 1.
                 else:
-                    self.Q[s_xy, 1] = npr.rand()/10
-                self.Q[s_xy, 0] = npr.rand()
+                    self.Q[s_xy, 1] = 0.1
+
+                self.Q[s_xy, 0] = 0.5
 
     def reset(self):
         self.last_state  = None
@@ -86,6 +88,8 @@ class Learner:
         '''This gets called so you can see what reward you get.'''
 
         self.last_reward = reward
+        #if reward < 0:
+        #    print self.Q
 
 iters = 100
 learner = Learner()
@@ -95,7 +99,7 @@ for ii in xrange(iters):
     # Make a new monkey object.
     swing = SwingyMonkey(sound=False,            # Don't play sounds.
                          text="Epoch %d" % (ii), # Display the epoch on screen.
-                         # tick_length=1,          # Make game ticks super fast.
+                         tick_length=30,          # Make game ticks super fast.
                          action_callback=learner.action_callback,
                          reward_callback=learner.reward_callback)
 
