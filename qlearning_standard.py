@@ -1,13 +1,16 @@
 import numpy.random as npr
 import numpy as np
+import csv
 import sys
 
 from SwingyMonkey import SwingyMonkey
 
+# parameters
 vunit = 20
 hunit = 50
 gamma = 0.9
 alpha = 0.1
+special_init = False
 
 class State:
 
@@ -35,8 +38,13 @@ class Learner:
                 s_xy = State(0,0,0)
                 s_xy.x = x
                 s_xy.y = y
-
-                self.Q[s_xy, 1] = 0.1
+                if special_init:
+                    if y < 0:
+                        self.Q[s_xy, 1] = 1.
+                    else:
+                        self.Q[s_xy, 1] = 0.1
+                else:
+                    self.Q[s_xy, 1] = 0.1
                 self.Q[s_xy, 0] = 0.5
 
     def reset(self):
@@ -84,17 +92,25 @@ class Learner:
 
         self.last_reward = reward
 
+def writeCSV(scores):
+    # Write csv
+    resultFile = open("test.csv",'wb')
+    wr = csv.writer(resultFile)
+    for item in scores:
+        wr.writerow([item])
 
 iters = 100
 learner = Learner()
 
 scores = []
+
+
 for ii in xrange(iters):
 
     # Make a new monkey object.
     swing = SwingyMonkey(sound=False,            # Don't play sounds.
                          text="Epoch %d" % (ii), # Display the epoch on screen.
-                         tick_length=1,          # Make game ticks super fast.
+                         tick_length=40,          # Make game ticks super fast.
                          action_callback=learner.action_callback,
                          reward_callback=learner.reward_callback)
 
@@ -103,15 +119,15 @@ for ii in xrange(iters):
         pass
 
     scores.append(swing.score)
+    
+    if ii % 5 == 0:
+        writeCSV(scores)
 
     # Reset the state of the learner.
     learner.reset()
+writeCSV(scores)
 
-# Write csv
-resultFile = open("output_qlearning.csv",'wb')
-wr = csv.writer(resultFile)
-for item in scores:
-    wr.writerow(item)
+
 
 
 
